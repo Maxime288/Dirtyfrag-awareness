@@ -33,11 +33,6 @@ Ce dépôt a pour objectif de :
 
 > ⚠️ Ce dépôt est strictement éducatif et défensif.  
 
-## 🧪 Environnement de Recherche
-
-Les démonstrations présentées dans ce dépôt ont été réalisées exclusivement dans des environnements de laboratoire contrôlés et isolés.
----
-
 # 🔍 Résumé Technique
 
 DirtyFrag cible plusieurs composants bas niveau du noyau Linux :

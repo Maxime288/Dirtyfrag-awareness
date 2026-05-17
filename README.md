@@ -32,7 +32,7 @@ Ce dépôt a pour objectif de :
 - aider les chercheurs et défenseurs à mieux comprendre les surfaces d’attaque du noyau Linux.
 
 > ⚠️ Ce dépôt est strictement éducatif et défensif.  
-> Aucun exploit offensif (« weaponized exploit ») n’est fourni.
+
 
 ---
 

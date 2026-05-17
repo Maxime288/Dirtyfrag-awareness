@@ -1,148 +1,142 @@
-# 🔴 DirtyFrag — Sensibilisation à la Vulnérabilité
+DirtyFrag — Sensibilisation à la Vulnérabilité
+Analyse d'Élévation Locale de Privilèges (LPE) du Noyau Linux
+TARGET: LINUX KERNEL TYPE: LOCAL PRIVILEGE ESCALATION CVE-2026-43284 / 43500
+ÉDUCATIF & RECHERCHE
 
-> **Dépôt éducatif** — Sensibilisation à la faille de sécurité Dirty Frag (CVE-2026-43284 + CVE-2026-43500).  
-> Source originale : [V4bel/dirtyfrag](https://github.com/V4bel/dirtyfrag) — Découverte par Hyunwoo Kim ([@v4bel](https://x.com/v4bel))
+AVERTISSEMENT : Ce document et son dépôt associé sont fournis exclusivement à des fins de sensibilisation,
+de recherche en sécurité et de défense préventive. N'utilisez jamais ces informations sur des architectures de
+production sans autorisation explicite. La divulgation a fait l'objet d'une coordination globale avec les mainteneurs
+du noyau Linux.
 
----
+Objectif du Projet
+Ce projet initié par la communauté a pour vocation de vulgariser et documenter le fonctionnement de la
+vulnérabilité critique appelée Dirty Frag. Contrairement aux outils offensifs clés en main, cette documentation
+analytique est dépourvue d'arme cybernétique (Weaponized Exploit). Elle met l'accent sur la mécanique interne du
+sous-système réseau de Linux, sur l'identification des cibles et sur le déploiement de stratégies de mitigation
+immédiates.
 
-## ⚠️ Avertissement
+Qu'est-ce que Dirty Frag ?
+Dirty Frag est une faille de type Local Privilege Escalation (LPE) impactant profondément la gestion de la
+mémoire du noyau Linux. Elle offre à un utilisateur local authentifié, même doté des privilèges les plus restreints
+(ex: utilisateur nobody ou un conteneur mal isolé), la capacité d'exécuter du code arbitraire avec les droits du
+super-utilisateur root .
+Cette faille est un descendant direct de vulnérabilités mémorables telles que Dirty Pipe (2022) ou Copy Fail (2024).
+Toutes exploitent une corruption du page-cache (le mécanisme de mise en cache des pages de stockage en
+RAM). La spécificité technique de Dirty Frag réside dans le détournement du membre frag au sein de la structure
+fondamentale des paquets réseau Linux : la structure sk_buff .
+Caractéristiques majeures de la faille
+Déterminisme Logique : Contrairement à d'autres failles de noyau complexes, elle ne repose sur aucune race
+condition (condition de concurrence). L'exécution réussit à chaque tentative sans aléa.
+Stabilité Absolue : L'échec potentiel de l'alignement mémoire ne déclenche aucun kernel panic ou plantage de
+la machine hôte. L'attaquant peut retenter sa primitive de corruption en toute discrétion.
+Contournement de Défense : Elle neutralise de manière transparente les mitigations implémentées pour
+bloquer Copy Fail, notamment la désactivation ou la mise sur liste noire du module algif_aead .
+Persistance Historique : Le code vulnérable sous-jacent était silencieusement installé dans la branche
+principale (mainline) du noyau Linux depuis environ 9 ans.
+•
 
-Ce dépôt est fourni **à des fins de sensibilisation et de recherche en sécurité uniquement**. N'utilisez jamais ces informations sur des systèmes que vous n'êtes pas autorisé à tester. La divulgation a été coordonnée avec les mainteneurs du noyau Linux via `linux-distros@vs.openwall.org`.
+•
 
-## 🎯 Objectif
-Projet de sensibilisation à la vulnérabilité Linux Dirty Frag (LPE kernel).
-Ce projet ne contient aucun exploit fonctionnel, uniquement de la documentation et des recommandations de mitigation.
----
+•
 
-## 🧠 Qu'est-ce que Dirty Frag ?
+•
 
-**Dirty Frag** est une vulnérabilité de classe **Local Privilege Escalation (LPE)** affectant le noyau Linux. Elle permet à un utilisateur local non privilégié d'obtenir les **droits root** sur les distributions Linux majeures.
+DirtyFrag-Awareness | Rapport de Sécurité Page 1 / 4
 
-Elle appartient à la même famille de bugs que [Dirty Pipe](https://dirtypipe.cm4all.com/) et [Copy Fail](https://copy.fail/), exploitant le **page-cache** du noyau Linux, mais en ciblant le membre `frag` de la structure `sk_buff`.
+Anatomie de la Chaîne d'Exploitation
+Pour garantir un taux de succès universel, l'attaque chaîne intelligemment deux vulnérabilités distinctes de manière
+à contourner les mécanismes de durcissement spécifiques à chaque distribution Linux.
+1. CVE-2026-43284 — xfrm-ESP Page-Cache Write
+Propriété Détails Techniques
+Composant affecté Sous-système IPsec / infrastructure de transformation xfrm
+Primitive d'attaque Écriture arbitraire ciblée de 4 octets dans le page-cache du noyau
+Introduction du bug Commit cac2661c53f3 — daté du 17 janvier 2017
+Correctif officiel Commit f4c50a4034e6 — intégré le 5 mai 2026
+Contrainte requise Nécessite la capacité à créer un namespace utilisateur ( user namespace )
+Particularité de sécurité : Bien que certaines distributions comme Ubuntu autorisent la création d'espaces de noms
+utilisateurs non privilégiés, des règles de profil strictes AppArmor bloquent nativement l'appel au sous-système
+réseau XFRM. C'est ici qu'intervient la seconde faille.
+2. CVE-2026-43500 — RxRPC Page-Cache Write
+Propriété Détails Techniques
+Composant affecté Module réseau RxRPC ( rxrpc.ko )
+Primitive d'attaque Écriture de blocs arbitraires directement dans le page-cache
+Introduction du bug Commit 2dc334f1a63a — daté du 8 juin 2023
+Correctif officiel Commit aa54b1d27fe0 — intégré le 10 mai 2026
+Contrainte requise Aucun privilège d'espace de noms requis. Nécessite simplement la présence
 
-### Caractéristiques clés
+ou le chargement automatique du module réseau.
 
-- ✅ **Bug logique déterministe** — aucune race condition nécessaire
-- ✅ **Taux de succès très élevé**
-- ✅ **Pas de panic kernel** en cas d'échec
-- ✅ **Bypass des mitigations Copy Fail** (blacklist algif_aead sans effet)
-- ✅ **Affecte toutes les distributions majeures**
-- ⏳ **Présente dans le noyau depuis ~9 ans**
+Particularité de sécurité : Sur de nombreuses configurations minimales de type serveurs d'entreprise (comme
+RHEL standard), le module rxrpc.ko n'est pas installé ou est désactivé par défaut. Néanmoins, sur des
+distributions orientées Desktop ou polyvalentes comme Ubuntu, ce module est disponible de base.
 
----
+DirtyFrag-Awareness | Rapport de Sécurité Page 2 / 4
 
-## 🔍 Les deux CVE en chaîne
+Logique de ciblage croisé
 
-Dirty Frag enchaîne deux vulnérabilités pour couvrir les angles morts de chacune :
+Ubuntu (AppArmor bloque xfrm-ESP) ──► Exploitation via le module RxRPC (Validé)
+RHEL / Distros Pro (RxRPC absent) ──► Exploitation via user namespace + xfrm-ESP
+(Validé)
+Résultat global : Accès ROOT garanti sur l'ensemble du spectre des distributions Linux.
+Note additionnelle sur Fragnesia : Peu de temps après la publication de ces deux failles, la variante **Fragnesia**
+(référencée sous la vulnérabilité **CVE-2026-46300**) a été découverte, démontrant que les premiers correctifs
+partiels laissaient subsister des vecteurs d'attaque résiduels sous certaines conditions d'assemblage de fragments
+IP.
 
-### CVE-2026-43284 — xfrm-ESP Page-Cache Write
-
-| Propriété | Détail |
-|-----------|--------|
-| Composant | Sous-système IPsec/xfrm |
-| Primitive | Écriture arbitraire de 4 octets dans le page-cache |
-| Depuis | `cac2661c53f3` — 17 janvier 2017 |
-| Corrigé | `f4c50a4034e6` — 5 mai 2026 |
-| Contrainte | Requiert la création d'un namespace utilisateur |
-
-> ⚠️ Ubuntu peut bloquer cette CVE via une politique AppArmor. C'est pour ça que CVE-2026-43500 est nécessaire.
-
-### CVE-2026-43500 — RxRPC Page-Cache Write
-
-| Propriété | Détail |
-|-----------|--------|
-| Composant | Module RxRPC |
-| Primitive | Écriture dans le page-cache |
-| Depuis | `2dc334f1a63a` — 8 juin 2023 |
-| Corrigé | `aa54b1d27fe0` — 10 mai 2026 |
-| Contrainte | **Pas de privilege de namespace requis** — mais `rxrpc.ko` absent sur beaucoup de distros |
-
-> 💡 Sur Ubuntu, `rxrpc.ko` est chargé par défaut — ce qui en fait la cible idéale quand xfrm-ESP est bloqué.
-
-### Pourquoi les chaîner ?
-
-```
-Ubuntu (AppArmor bloque xfrm-ESP)  →  RxRPC fonctionne
-Autres distros (rxrpc.ko absent)   →  xfrm-ESP fonctionne
-
-Résultat : ROOT sur TOUTES les distributions majeures
-```
-
----
-
-## 🖥️ Distributions confirmées vulnérables
-
-- Ubuntu 24.04.4 — kernel `6.17.0-23-generic`
-- RHEL 10.1 — kernel `6.12.0-124.49.1.el10_1.x86_64`
-- openSUSE Tumbleweed — kernel `7.0.2-1-default`
-- CentOS Stream 10 — kernel `6.12.0-224.el10.x86_64`
-- AlmaLinux 10 — kernel `6.12.0-124.52.3.el10_1.x86_64`
-- Fedora 44 — kernel `6.19.14-300.fc44.x86_64`
-- Et d'autres...
-
----
-
-## 🛡️ Mitigation
-
-### Solution immédiate (désactiver les modules vulnérables)
-
-```bash
+Distributions Validées Vulnérables (Versions d'Origine)
+Les versions d'origine et non corrigées des distributions majeures listées ci-dessous ont été confirmées comme
+pleinement exposées :
+Ubuntu 24.04.4 LTS — Noyau de la branche stable standard 6.8.0-xx-generic
+Red Hat Enterprise Linux (RHEL) 10.1 — Noyau d'origine 6.12.0-124.49.1.el10_1.x86_64
+Fedora 44 — Noyau d'origine 6.19.14-300.fc44.x86_64
+openSUSE Tumbleweed — Environnement basé sur le noyau 7.0.2-1-default
+CentOS Stream 10 & AlmaLinux 10 — Noyaux d'origine de la branche 6.12
+Guide de Mitigation et Remédiation Proactive
+1. Action Immédiate : Neutralisation des Vecteurs Réseau
+Si la mise à jour immédiate de vos serveurs en production s'avère impossible pour des raisons opérationnelles,
+vous devez neutraliser préventivement le chargement des modules noyau incriminés. La commande ci-dessous
+automatise ce blocage et vide le cache système :
 sudo sh -c "printf 'install esp4 /bin/false\ninstall esp6 /bin/false\ninstall rxrpc /bin/false\n' \
-  > /etc/modprobe.d/dirtyfrag.conf; \
-  rmmod esp4 esp6 rxrpc 2>/dev/null; \
-  echo 3 > /proc/sys/vm/drop_caches; true"
-```
+> /etc/modprobe.d/dirtyfrag.conf; \
+rmmod esp4 esp6 rxrpc 2>/dev/null; \
+sync && echo 3 > /proc/sys/vm/drop_caches; true"
+Attention : L'application de cette restriction rendra temporairement inutilisables les tunnels VPN s'appuyant sur les
+protocoles IPsec/ESP, ainsi que les montages réseau s'appuyant sur le système de fichiers distribué AFS (RxRPC).
+2. Action Post-Incident ou Post-Test : Purge du Page-Cache
+Dans l'éventualité où une tentative d'audit ou un test d'intrusion a été mené, le page-cache de la machine peut se
+retrouver dans un état instable ou pollué. Afin de restaurer l'intégrité de la mémoire vive sans procéder à un
+redémarrage lourd de l'infrastructure, appliquez la commande suivante :
+•
+•
+•
+•
+•
 
-### Après une exploitation (nettoyage du page-cache)
+DirtyFrag-Awareness | Rapport de Sécurité Page 3 / 4
 
-```bash
-# Vider le page-cache pollué
-echo 3 > /proc/sys/vm/drop_caches
+sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
+3. Résolution Définitive
+La seule protection pérenne réside dans l'application des paquets de mise à jour fournis par vos éditeurs respectifs.
+Les équipes de sécurité des distributions majeures ont intégré les rétro-corrections (backports) nécessaires.
+Chronologie Technique Finale (Année 2026)
+Date de l'Événement Description de l'Étape de Cycle de Vie
+17 Janvier 2017 Introduction initiale du bug logique xfrm-ESP (commit historique cac2661c53f3 ).
+8 Juin 2023
 
-# Ou simplement redémarrer le système
-sudo reboot
-```
+Introduction du second bug au sein du code RxRPC (commit historique
+2dc334f1a63a ).
 
-### Solution définitive
+5 Mai 2026
 
-Mettre à jour le noyau Linux dès que votre distribution publie un backport des correctifs.
+Le correctif officiel de sécurité xfrm-ESP est fusionné dans la branche stable
+(Mainline).
 
----
+7 Mai 2026
 
-## 📅 Chronologie
+Rupture anticipée de l'embargo de sécurité et coordination avec l'écosystème linux-
+distros .
 
-| Date | Événement |
-|------|-----------|
-| 17 jan. 2017 | Introduction du bug xfrm-ESP (`cac2661c53f3`) |
-| 8 juin 2023 | Introduction du bug RxRPC (`2dc334f1a63a`) |
-| 5 mai 2026 | Patch xfrm-ESP mergé dans le mainline (`f4c50a4034e6`) |
-| 7 mai 2026 | Publication anticipée (rupture d'embargo) — coordination linux-distros |
-| 10 mai 2026 | Patch RxRPC mergé dans le mainline (`aa54b1d27fe0`) |
+10 Mai 2026 Le correctif du module RxRPC est validé et injecté globalement.
 
----
-
-## 🔗 Relation avec d'autres vulnérabilités
-
-- **[Dirty Pipe (2022)](https://dirtypipe.cm4all.com/)** — Vulnérabilité ancêtre, même classe de bugs page-cache. Dirty Frag en est un descendant direct.
-- **[Copy Fail (2024)](https://copy.fail/)** — Motivation initiale de la recherche. Dirty Frag partage le même sink que Copy Fail, mais contourne sa mitigation (blacklist algif_aead).
-
----
-
-## 📚 Ressources
-
-- 🔴 [Dépôt original — V4bel/dirtyfrag](https://github.com/V4bel/dirtyfrag) (PoC + write-up technique complet)
-- 🔧 [Patch kernel CVE-2026-43284](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f4c50a4034e62ab75f1d5cdd191dd5f9c77fdff4)
-- 🔧 [Patch kernel CVE-2026-43500](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=aa54b1d27fe0c2b78e664a34fd0fdf7cd1960d71)
-- 📖 [Dirty Pipe — dirtypipe.cm4all.com](https://dirtypipe.cm4all.com/)
-- 📖 [Copy Fail — copy.fail](https://copy.fail/)
-
----
-
-## 👤 Crédits
-
-- **Découverte & recherche** : Hyunwoo Kim ([@v4bel](https://x.com/v4bel))
-- **Dépôt de sensibilisation** : [@Maxime288](https://github.com/Maxime288)
-
----
-
-*Ce dépôt ne contient pas de code d'exploitation. Pour le PoC technique, référez-vous au dépôt original de l'auteur.*
+Auteur Original & Découverte : Hyunwoo Kim (@v4bel) — Dépôt de référence technique : V4bel/dirtyfrag .
+Dépôt de Sensibilisation Francophone : Développé et maintenu par @Maxime288 sur Dirtyfrag-awareness .

@@ -9,6 +9,9 @@
 
 Ce dépôt est fourni **à des fins de sensibilisation et de recherche en sécurité uniquement**. N'utilisez jamais ces informations sur des systèmes que vous n'êtes pas autorisé à tester. La divulgation a été coordonnée avec les mainteneurs du noyau Linux via `linux-distros@vs.openwall.org`.
 
+## 🎯 Objectif
+Projet de sensibilisation à la vulnérabilité Linux Dirty Frag (LPE kernel).
+Ce projet ne contient aucun exploit fonctionnel, uniquement de la documentation et des recommandations de mitigation.
 ---
 
 ## 🧠 Qu'est-ce que Dirty Frag ?

@@ -1,131 +1,132 @@
-# DirtyFrag Awareness
+<div align="center">
 
-> Sensibilisation à la vulnérabilité **Dirty Frag** — Analyse d’Élévation Locale de Privilèges (LPE) du noyau Linux.
+# 🚨 DirtyFrag Awareness
 
----
+### Linux Kernel Local Privilege Escalation (LPE) Research & Awareness
 
-## ⚠️ Avertissement
+<p align="center">
+  <img src="https://img.shields.io/badge/Linux-Kernel-critical?style=for-the-badge&logo=linux&logoColor=white" />
+  <img src="https://img.shields.io/badge/Security-Research-red?style=for-the-badge&logo=hackthebox&logoColor=white" />
+  <img src="https://img.shields.io/badge/Status-Educational-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Focus-Defensive-success?style=for-the-badge" />
+</p>
 
-Ce projet est fourni exclusivement à des fins :
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:dc2626&height=240&section=header&text=DirtyFrag&fontSize=58&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Linux%20Kernel%20LPE%20Awareness%20Project&descAlignY=60" />
+</p>
 
-- de sensibilisation,
-- de recherche en sécurité,
-- de défense préventive.
-
-Aucun exploit weaponized n’est inclus dans ce dépôt.
-
-N’utilisez jamais ces informations sur des infrastructures de production sans autorisation explicite.
-
-> ⚠️ Les éléments présentés dans ce projet constituent un scénario de recherche en sécurité à vocation pédagogique. Les identifiants CVE utilisés servent à structurer l’analyse technique et ne préjugent pas nécessairement d’une publication officielle.
-
----
-
-## 📌 Présentation
-
-DirtyFrag est une vulnérabilité de type **Local Privilege Escalation (LPE)** affectant le noyau Linux.
-
-Elle peut permettre à un utilisateur local authentifié — même fortement restreint — d’obtenir une exécution de code avec des privilèges élevés, potentiellement jusqu’à `root`, dans les environnements concernés.
-
-Le projet a pour objectif de :
-
-- vulgariser le fonctionnement interne de la faille,
-- documenter les composants impactés,
-- expliquer la chaîne d’exploitation,
-- proposer des mesures de mitigation immédiates.
+</div>
 
 ---
 
-# 🔍 Qu’est-ce que Dirty Frag ?
+# 📖 Overview
 
-DirtyFrag est une vulnérabilité affectant plusieurs sous-systèmes du noyau Linux, notamment :
+**DirtyFrag** is a Linux kernel Local Privilege Escalation (LPE) research and awareness project focused on page-cache corruption and modern kernel attack surfaces.
 
-- la gestion mémoire,
-- le `page-cache`,
-- certains composants réseau.
+This repository aims to:
 
-Elle est conceptuellement proche de vulnérabilités telles que :
+- document the internal mechanics behind the vulnerability,
+- explain the exploitation chain,
+- analyze impacted Linux subsystems,
+- provide mitigation and defensive guidance,
+- help defenders and researchers understand kernel attack vectors.
+
+> ⚠️ This repository is strictly educational and defensive.  
+> No weaponized exploit or offensive tooling is provided.
+
+---
+
+# 🔍 Technical Summary
+
+DirtyFrag targets several low-level Linux kernel components:
+
+- memory management,
+- page-cache handling,
+- networking internals,
+- packet fragmentation mechanisms,
+- `sk_buff` structures.
+
+The vulnerability family is conceptually related to:
 
 - Dirty Pipe (2022),
-- Copy Fail (2024).
-
-La vulnérabilité exploite une corruption liée au membre `frag` de la structure réseau Linux `sk_buff`.
-
----
-
-# ✨ Caractéristiques principales
-
-## ✅ Déterminisme logique
-
-Aucune condition de compétition (race condition) n’est requise dans le modèle analysé.
-
-## ✅ Stabilité élevée
-
-Les tentatives échouées n’entraînent généralement pas de :
-
-- kernel panic,
-- crash système,
-- redémarrage immédiat.
-
-## ✅ Contournement de certaines mitigations
-
-Dirty Frag peut contourner certaines protections mises en place contre :
-
-- Copy Fail,
-- `algif_aead`,
-- blacklist de modules spécifiques.
-
-## ✅ Présence historique
-
-Le code vulnérable serait présent dans la branche principale du noyau Linux depuis environ **9 ans**, selon l’analyse du projet.
+- Copy Fail (2024),
+- page-cache corruption primitives.
 
 ---
 
-# 🧩 Chaîne d’exploitation
+# 🧠 Key Characteristics
 
-La chaîne combine deux vulnérabilités distinctes afin de couvrir différents environnements système.
+| Feature | Description |
+|---|---|
+| Deterministic behavior | No race condition required |
+| Stable execution model | Reduced crash probability |
+| Page-cache corruption | Arbitrary controlled writes |
+| Namespace interaction | User namespace implications |
+| Multi-distribution impact | Ubuntu / RHEL / Fedora / SUSE |
+| Defensive bypasses | Certain mitigations can be bypassed |
 
 ---
+
+# 🧩 Exploitation Chain
 
 ## CVE-2026-43284 — xfrm-ESP Page-Cache Write
 
-| Élément | Détails |
+| Property | Value |
 |---|---|
-| Composant affecté | Sous-système IPsec / XFRM |
-| Primitive | Écriture contrôlée de 4 octets dans le page-cache |
-| Introduction du bug | `cac2661c53f3` (17 janvier 2017) |
-| Correctif officiel | `f4c50a4034e6` (5 mai 2026) |
-| Condition requise | User namespace |
+| Component | IPsec / XFRM |
+| Primitive | Controlled 4-byte page-cache write |
+| Introduced | `cac2661c53f3` |
+| Fixed | `f4c50a4034e6` |
+| Requirement | User namespace |
 
 ---
 
 ## CVE-2026-43500 — RxRPC Page-Cache Write
 
-| Élément | Détails |
+| Property | Value |
 |---|---|
-| Composant affecté | `rxrpc.ko` |
-| Primitive | Écriture contrôlée dans le page-cache |
-| Introduction du bug | `2dc334f1a63a` (8 juin 2023) |
-| Correctif officiel | `aa54b1d27fe0` (10 mai 2026) |
-| Condition requise | Aucun privilège namespace |
+| Component | `rxrpc.ko` |
+| Primitive | Arbitrary page-cache write |
+| Introduced | `2dc334f1a63a` |
+| Fixed | `aa54b1d27fe0` |
+| Requirement | None |
 
 ---
 
-# 🎯 Logique de ciblage croisé
+# 🎯 Cross-Distribution Targeting Logic
 
-Ubuntu → RxRPC  
-RHEL → xfrm + namespaces  
+```text
+Ubuntu
+ └── RxRPC exploitation path
 
-Résultat : élévation de privilèges observée dans plusieurs environnements Linux testés.
+RHEL / Enterprise Linux
+ └── xfrm + namespace exploitation path
+```
+
+Result:
+
+- broader kernel attack surface coverage,
+- privilege escalation scenarios across multiple Linux ecosystems.
 
 ---
 
-# 🛡️ Mitigation immédiate
+# 🖥️ Potentially Impacted Environments
+
+- Ubuntu 24.04 LTS
+- Fedora 44
+- RHEL 10.x
+- AlmaLinux 10
+- CentOS Stream 10
+- openSUSE Tumbleweed
+
+---
+
+# 🛡️ Immediate Mitigation
+
+## Disable vulnerable modules
 
 ```bash
-sudo sh -c "printf 'install esp4 /bin/false
-install esp6 /bin/false
-install rxrpc /bin/false
-' \
+sudo sh -c "printf 'install esp4 /bin/false\ninstall esp6 /bin/false\ninstall rxrpc /bin/false\n' \
  > /etc/modprobe.d/dirtyfrag.conf; \
  rmmod esp4 esp6 rxrpc 2>/dev/null; \
  sync && echo 3 > /proc/sys/vm/drop_caches; true"
@@ -133,7 +134,7 @@ install rxrpc /bin/false
 
 ---
 
-# 🧹 Purge du page-cache
+# 🧹 Flush Page Cache
 
 ```bash
 sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
@@ -141,23 +142,80 @@ sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
 ---
 
-# 📅 Chronologie
+# ✅ Permanent Remediation
 
-- 2017 : introduction xfrm-ESP
-- 2023 : introduction RxRPC
-- 2026 : correctifs kernel
+Apply official kernel security updates provided by your Linux distribution vendor.
+
+Recommended:
+
+- update kernel packages,
+- reboot affected systems,
+- validate mitigations,
+- review namespace policies,
+- monitor unusual page-cache behavior.
 
 ---
 
-# 👤 Crédits
+# 📅 Timeline
 
-- Hyunwoo Kim (@v4bel)
-- @Maxime288
+| Date | Event |
+|---|---|
+| Jan 2017 | xfrm vulnerability introduced |
+| Jun 2023 | RxRPC issue introduced |
+| May 2026 | Official fixes integrated |
 
 ---
 
-# 📚 Objectif
+# 📚 Research Goals
 
-Documentation, sensibilisation et recherche défensive.
+This repository focuses on:
 
-Aucun exploit offensif fourni.
+- Linux kernel internals,
+- defensive security research,
+- vulnerability awareness,
+- mitigation engineering,
+- page-cache exploitation theory,
+- Linux hardening practices.
+
+---
+
+# ⚠️ Legal & Ethical Notice
+
+This project is intended exclusively for:
+
+- defensive research,
+- educational purposes,
+- authorized laboratory environments,
+- cybersecurity awareness.
+
+Do **NOT** use these concepts against systems without explicit authorization.
+
+---
+
+# 👤 Credits
+
+## Original Research
+
+- **Hyunwoo Kim (@v4bel)**
+
+## French Awareness Project
+
+- **@Maxime288**
+
+---
+
+<div align="center">
+
+## ⭐ Support the Project
+
+If this repository helped your research or awareness work:
+
+⭐ Star the repository  
+🔁 Share with the security community  
+🛡️ Promote defensive security research
+
+---
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:dc2626,100:0f172a&height=120&section=footer"/>
+
+</div>

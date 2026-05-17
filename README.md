@@ -2,13 +2,13 @@
 
 # 🚨 DirtyFrag Awareness
 
-### Linux Kernel Local Privilege Escalation (LPE) Research & Awareness
+### Analyse & Sensibilisation à une élévation locale de privilèges (LPE) du noyau Linux
 
 <p align="center">
   <img src="https://img.shields.io/badge/Linux-Kernel-critical?style=for-the-badge&logo=linux&logoColor=white" />
-  <img src="https://img.shields.io/badge/Security-Research-red?style=for-the-badge&logo=hackthebox&logoColor=white" />
-  <img src="https://img.shields.io/badge/Status-Educational-blue?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Focus-Defensive-success?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Cybersécurité-Recherche-red?style=for-the-badge&logo=hackthebox&logoColor=white" />
+  <img src="https://img.shields.io/badge/Statut-Éducatif-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Orientation-Défensive-success?style=for-the-badge" />
 </p>
 
 <p align="center">
@@ -19,98 +19,98 @@
 
 ---
 
-# 📖 Overview
+# 📖 Présentation
 
-**DirtyFrag** is a Linux kernel Local Privilege Escalation (LPE) research and awareness project focused on page-cache corruption and modern kernel attack surfaces.
+**DirtyFrag** est un projet de recherche et de sensibilisation autour d’une vulnérabilité de type **Local Privilege Escalation (LPE)** affectant le noyau Linux.
 
-This repository aims to:
+Ce dépôt a pour objectif de :
 
-- document the internal mechanics behind the vulnerability,
-- explain the exploitation chain,
-- analyze impacted Linux subsystems,
-- provide mitigation and defensive guidance,
-- help defenders and researchers understand kernel attack vectors.
+- documenter les mécanismes internes de la vulnérabilité,
+- expliquer la chaîne d’exploitation,
+- analyser les sous-systèmes Linux impactés,
+- proposer des mesures de mitigation,
+- aider les chercheurs et défenseurs à mieux comprendre les surfaces d’attaque du noyau Linux.
 
-> ⚠️ This repository is strictly educational and defensive.  
-> No weaponized exploit or offensive tooling is provided.
+> ⚠️ Ce dépôt est strictement éducatif et défensif.  
+> Aucun exploit offensif (« weaponized exploit ») n’est fourni.
 
 ---
 
-# 🔍 Technical Summary
+# 🔍 Résumé Technique
 
-DirtyFrag targets several low-level Linux kernel components:
+DirtyFrag cible plusieurs composants bas niveau du noyau Linux :
 
-- memory management,
-- page-cache handling,
-- networking internals,
-- packet fragmentation mechanisms,
-- `sk_buff` structures.
+- gestion mémoire,
+- page-cache,
+- sous-système réseau,
+- fragmentation réseau,
+- structures `sk_buff`.
 
-The vulnerability family is conceptually related to:
+La vulnérabilité est conceptuellement proche de :
 
 - Dirty Pipe (2022),
 - Copy Fail (2024),
-- page-cache corruption primitives.
+- primitives modernes de corruption du page-cache.
 
 ---
 
-# 🧠 Key Characteristics
+# 🧠 Caractéristiques Principales
 
-| Feature | Description |
+| Fonctionnalité | Description |
 |---|---|
-| Deterministic behavior | No race condition required |
-| Stable execution model | Reduced crash probability |
-| Page-cache corruption | Arbitrary controlled writes |
-| Namespace interaction | User namespace implications |
-| Multi-distribution impact | Ubuntu / RHEL / Fedora / SUSE |
-| Defensive bypasses | Certain mitigations can be bypassed |
+| Déterminisme logique | Aucune race condition requise |
+| Stabilité élevée | Faible probabilité de crash système |
+| Corruption du page-cache | Écritures contrôlées possibles |
+| Interaction namespaces | Impact des user namespaces |
+| Impact multi-distributions | Ubuntu / RHEL / Fedora / SUSE |
+| Contournement défensif | Certaines mitigations peuvent être contournées |
 
 ---
 
-# 🧩 Exploitation Chain
+# 🧩 Chaîne d’Exploitation
 
 ## CVE-2026-43284 — xfrm-ESP Page-Cache Write
 
-| Property | Value |
+| Élément | Valeur |
 |---|---|
-| Component | IPsec / XFRM |
-| Primitive | Controlled 4-byte page-cache write |
-| Introduced | `cac2661c53f3` |
-| Fixed | `f4c50a4034e6` |
-| Requirement | User namespace |
+| Composant | IPsec / XFRM |
+| Primitive | Écriture contrôlée de 4 octets |
+| Introduction | `cac2661c53f3` |
+| Correctif | `f4c50a4034e6` |
+| Condition | User namespace |
 
 ---
 
 ## CVE-2026-43500 — RxRPC Page-Cache Write
 
-| Property | Value |
+| Élément | Valeur |
 |---|---|
-| Component | `rxrpc.ko` |
-| Primitive | Arbitrary page-cache write |
-| Introduced | `2dc334f1a63a` |
-| Fixed | `aa54b1d27fe0` |
-| Requirement | None |
+| Composant | `rxrpc.ko` |
+| Primitive | Écriture arbitraire dans le page-cache |
+| Introduction | `2dc334f1a63a` |
+| Correctif | `aa54b1d27fe0` |
+| Condition | Aucune |
 
 ---
 
-# 🎯 Cross-Distribution Targeting Logic
+# 🎯 Logique de Ciblage Croisé
 
 ```text
 Ubuntu
- └── RxRPC exploitation path
+ └── Exploitation via RxRPC
 
 RHEL / Enterprise Linux
- └── xfrm + namespace exploitation path
+ └── Exploitation via xfrm + namespaces
 ```
 
-Result:
+Résultat :
 
-- broader kernel attack surface coverage,
-- privilege escalation scenarios across multiple Linux ecosystems.
+- surface d’attaque élargie,
+- élévation de privilèges possible sur plusieurs distributions Linux.
 
 ---
 
-# 🖥️ Potentially Impacted Environments
+# 🖥️ Environnements Potentiellement Impactés
 
 - Ubuntu 24.04 LTS
 - Fedora 44
@@ -121,9 +121,9 @@ Result:
 
 ---
 
-# 🛡️ Immediate Mitigation
+# 🛡️ Mitigation Immédiate
 
-## Disable vulnerable modules
+## Désactivation des modules vulnérables
 
 ```bash
 sudo sh -c "printf 'install esp4 /bin/false\ninstall esp6 /bin/false\ninstall rxrpc /bin/false\n' \
@@ -134,7 +134,7 @@ sudo sh -c "printf 'install esp4 /bin/false\ninstall esp6 /bin/false\ninstall rx
 
 ---
 
-# 🧹 Flush Page Cache
+# 🧹 Purge du Page-Cache
 
 ```bash
 sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
@@ -142,63 +142,63 @@ sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
 ---
 
-# ✅ Permanent Remediation
+# ✅ Remédiation Définitive
 
-Apply official kernel security updates provided by your Linux distribution vendor.
+Appliquez les correctifs de sécurité officiels fournis par votre distribution Linux.
 
-Recommended:
+Recommandations :
 
-- update kernel packages,
-- reboot affected systems,
-- validate mitigations,
-- review namespace policies,
-- monitor unusual page-cache behavior.
+- mettre à jour le noyau Linux,
+- redémarrer les systèmes concernés,
+- valider les mitigations,
+- revoir les politiques namespaces,
+- surveiller les comportements anormaux du page-cache.
 
 ---
 
-# 📅 Timeline
+# 📅 Chronologie
 
-| Date | Event |
+| Date | Événement |
 |---|---|
-| Jan 2017 | xfrm vulnerability introduced |
-| Jun 2023 | RxRPC issue introduced |
-| May 2026 | Official fixes integrated |
+| Janvier 2017 | Introduction de la faille xfrm |
+| Juin 2023 | Introduction de la faille RxRPC |
+| Mai 2026 | Intégration des correctifs officiels |
 
 ---
 
-# 📚 Research Goals
+# 📚 Objectifs du Projet
 
-This repository focuses on:
+Ce dépôt est consacré à :
 
-- Linux kernel internals,
-- defensive security research,
-- vulnerability awareness,
-- mitigation engineering,
-- page-cache exploitation theory,
-- Linux hardening practices.
-
----
-
-# ⚠️ Legal & Ethical Notice
-
-This project is intended exclusively for:
-
-- defensive research,
-- educational purposes,
-- authorized laboratory environments,
-- cybersecurity awareness.
-
-Do **NOT** use these concepts against systems without explicit authorization.
+- la recherche défensive,
+- l’analyse du noyau Linux,
+- la sensibilisation cybersécurité,
+- l’étude du page-cache,
+- les mécanismes de mitigation,
+- le hardening Linux.
 
 ---
 
-# 👤 Credits
+# ⚠️ Notice Légale & Éthique
 
-## Original Research
+Ce projet est destiné exclusivement :
+
+- à la recherche défensive,
+- à des environnements de laboratoire autorisés,
+- à la sensibilisation cybersécurité,
+- à l’éducation technique.
+
+N’utilisez jamais ces concepts contre des systèmes sans autorisation explicite.
+
+---
+
+# 👤 Crédits
+
+## Recherche Originale
 
 - **Hyunwoo Kim (@v4bel)**
 
-## French Awareness Project
+## Projet Francophone de Sensibilisation
 
 - **@Maxime288**
 
@@ -206,13 +206,13 @@ Do **NOT** use these concepts against systems without explicit authorization.
 
 <div align="center">
 
-## ⭐ Support the Project
+## ⭐ Soutenir le Projet
 
-If this repository helped your research or awareness work:
+Si ce dépôt vous a aidé :
 
-⭐ Star the repository  
-🔁 Share with the security community  
-🛡️ Promote defensive security research
+⭐ Ajoutez une étoile au projet  
+🔁 Partagez-le avec la communauté sécurité  
+🛡️ Encouragez la recherche défensive
 
 ---
 

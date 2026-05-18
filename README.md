@@ -5,14 +5,14 @@
 ### Analyse & Sensibilisation à une élévation locale de privilèges (LPE) du noyau Linux
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Linux-Kernel-critical?style=for-the-badge&logo=linux&logoColor=white" />
+  <img src="https://img.shields.io/badge/Linux-Kernel%20Security-black?style=for-the-badge&logo=linux&logoColor=white" />
   <img src="https://img.shields.io/badge/Cybersécurité-Recherche-red?style=for-the-badge&logo=hackthebox&logoColor=white" />
   <img src="https://img.shields.io/badge/Statut-Éducatif-blue?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Orientation-Défensive-success?style=for-the-badge" />
 </p>
 
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:dc2626&height=240&section=header&text=DirtyFrag&fontSize=58&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Linux%20Kernel%20LPE%20Awareness%20Project&descAlignY=60" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:dc2626&height=240&section=header&text=DirtyFrag&fontSize=58&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Linux%20Kernel%20Security%20Research&descAlignY=60" />
 </p>
 
 </div>
@@ -31,7 +31,32 @@ Ce dépôt a pour objectif de :
 - proposer des mesures de mitigation,
 - aider les chercheurs et défenseurs à mieux comprendre les surfaces d’attaque du noyau Linux.
 
-> ⚠️ Ce dépôt est strictement éducatif et défensif.  
+> ⚠️ Ce dépôt est strictement éducatif et défensif.
+
+---
+
+# 📑 Sommaire
+
+- Présentation
+- Résumé Technique
+- Caractéristiques
+- Chaîne d’Exploitation
+- Vue Simplifiée
+- Environnements Impactés
+- Mitigation
+- Remédiation
+- Références
+- Notice Légale
+
+---
+
+# 🧪 Environnement de Recherche
+
+Les démonstrations et analyses présentées dans ce dépôt ont été réalisées exclusivement dans des environnements de laboratoire isolés et contrôlés.
+
+Aucune utilisation sur infrastructure de production n’est recommandée sans autorisation explicite.
+
+---
 
 # 🔍 Résumé Technique
 
@@ -51,7 +76,7 @@ La vulnérabilité est conceptuellement proche de :
 
 ---
 
-# 🧠 Caractéristiques Principales
+# 🧠 Caractéristiques
 
 | Fonctionnalité | Description |
 |---|---|
@@ -90,6 +115,24 @@ La vulnérabilité est conceptuellement proche de :
 
 ---
 
+# 🧬 Vue Simplifiée de la Chaîne
+
+```text
+User Space
+    ↓
+Page Cache
+    ↓
+sk_buff Fragmentation
+    ↓
+RxRPC / XFRM
+    ↓
+Controlled Write
+    ↓
+Privilege Escalation
+```
+
+---
+
 # 🎯 Logique de Ciblage Croisé
 
 ```text
@@ -107,7 +150,7 @@ Résultat :
 
 ---
 
-# 🖥️ Environnements Potentiellement Impactés
+# 🖥️ Environnements Impactés
 
 - Ubuntu 24.04 LTS
 - Fedora 44
@@ -118,7 +161,9 @@ Résultat :
 
 ---
 
-# 🛡️ Mitigation Immédiate
+<a id="mitigation"></a>
+
+# 🛡️ Mitigation
 
 ## Désactivation des modules vulnérables
 
@@ -139,7 +184,7 @@ sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
 ---
 
-# ✅ Remédiation Définitive
+# ✅ Remédiation
 
 Appliquez les correctifs de sécurité officiels fournis par votre distribution Linux.
 
@@ -160,6 +205,17 @@ Recommandations :
 | Janvier 2017 | Introduction de la faille xfrm |
 | Juin 2023 | Introduction de la faille RxRPC |
 | Mai 2026 | Intégration des correctifs officiels |
+
+---
+
+# 🔗 Références
+
+- Dirty Pipe (CVE-2022-0847)
+- Linux Kernel Documentation
+- Openwall Security
+- LWN.net Kernel Analysis
+- Linux XFRM Subsystem
+- Linux RxRPC Documentation
 
 ---
 
@@ -201,15 +257,36 @@ N’utilisez jamais ces concepts contre des systèmes sans autorisation explicit
 
 ---
 
+# 📂 Structure du Dépôt
+
+```text
+/docs
+ ├── diagrams/
+ ├── screenshots/
+ ├── mitigation/
+ └── research-notes/
+```
+
+---
+
+# 📜 Licence
+
+Ce projet est distribué à des fins éducatives et de recherche défensive.
+
+Licence recommandée :
+- MIT
+- Apache 2.0
+- CC BY-NC 4.0
+
+---
+
 <div align="center">
 
-## ⭐ Soutenir le Projet
+## ⭐ Supporter la Recherche Sécurité Linux
 
-Si ce dépôt vous a aidé :
-
-⭐ Ajoutez une étoile au projet  
-🔁 Partagez-le avec la communauté sécurité  
-🛡️ Encouragez la recherche défensive
+🛡️ Promote Linux Kernel Security Research  
+🔁 Partagez le projet avec la communauté cybersécurité  
+⭐ Soutenez la sensibilisation et la recherche défensive
 
 ---
 

@@ -257,15 +257,6 @@ N’utilisez jamais ces concepts contre des systèmes sans autorisation explicit
 
 ---
 
-# 📂 Structure du Dépôt
-
-```text
-/docs
- ├── diagrams/
- ├── screenshots/
- ├── mitigation/
- └── research-notes/
-```
 
 ---
 
